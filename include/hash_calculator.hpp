@@ -6,15 +6,22 @@
 #define MULTITHREADS_HASH_CALCULATOR_HPP
 #include <thread>
 #include <iostream>
+#include "boost/log/trivial.hpp"
+//#include "boost/log/sources/logger.hpp"
+#include "boost/log/sinks.hpp"
+#include "boost/log/core/record.hpp"
+#include "boost/log/core.hpp"
+#include "boost/log/core/core.hpp"
+#include "boost/log/core/record_view.hpp"
+#include <boost/log/utility/setup/console.hpp>
+#include <boost/log/utility/setup/file.hpp>
+#include <boost/log/utility/setup/common_attributes.hpp>
 
 class hash_calculator {
  public:
-  int get_a() const;
-  void set_a(const int& b);
   void calculate_hash();
-
- private:
-  int a;
+  static int* a;
+ // static
 };
 
 #endif  // MULTITHREADS_HASH_CALCULATOR_HPP

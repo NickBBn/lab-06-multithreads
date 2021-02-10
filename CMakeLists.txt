@@ -29,6 +29,8 @@ string(APPEND CMAKE_CXX_FLAGS " -pthread")
 
 hunter_add_package(GTest)
 find_package(GTest CONFIG REQUIRED)
+hunter_add_package(Boost COMPONENTS log filesystem system chrono thread regex date_time atomic)
+find_package(Boost CONFIG REQUIRED log filesystem system chrono thread regex date_time atomic)
 
 add_library(${PROJECT_NAME} STATIC
   # enum your files and delete this comment
@@ -42,6 +44,17 @@ target_include_directories(${PROJECT_NAME} PUBLIC
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
   "$<INSTALL_INTERFACE:include>"
 )
+
+target_link_libraries(multithreads PUBLIC Boost::log
+        Boost::filesystem
+        Boost::chrono
+        Boost::thread
+        Boost::regex
+        Boost::date_time
+        Boost::atomic
+        Boost::system
+        Boost::boost
+        )
 
 target_link_libraries(calculation ${PROJECT_NAME})
 

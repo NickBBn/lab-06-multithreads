@@ -2,35 +2,21 @@
 #include <hash_calculator.hpp>
 #include <thread>
 #include <vector>
-/*
-void new_thread(std::shared_ptr<hash_calculator> calc){
-  std::cout << "thread " << std::this_thread::get_id()
-            << " ; a = " << calc->get_a() << std::endl;
-  calc->calculate_hash();
-}
-
-int main() {
-  std::cout << "Hello world" << std::endl;
-  std::vector<std::shared_ptr<hash_calculator>> calc_pointers;
-  std::shared_ptr<hash_calculator> calc_orig(new hash_calculator);
-  calc_pointers.push_back(calc_orig);
-  calc_orig->set_a(10);
-  std::vector<std::thread> threads;
-  for (size_t i = 0; i < 10; ++i)
-  {
-    std::shared_ptr<hash_calculator> calc(new hash_calculator);
-    threads.emplace_back(std::thread(new_thread, calc));
-  }
-  std::thread thr(new_thread, calc_orig);
-  thr.join();
-  return 0;
-}*/
 
 void calculation() {
-  std::cout << "thread " << std::this_thread::get_id() << std::endl;
+  hash_calculator calc;
+  calc.calculate_hash();
+}
+
+int* hash_calculator::a = nullptr;
+void init(){
+  boost::log::add_file_log("sample.log");
 }
 
 int main(int argc, char* argv[]) {
+  init();
+  BOOST_LOG_TRIVIAL(trace) << "A trace severity message";
+  hash_calculator::a = new int(25);
   unsigned number_of_threads = 0;
   switch (argc){
     case 1 :
@@ -45,12 +31,13 @@ int main(int argc, char* argv[]) {
       }
       break;
     default:
-      std::cout << "invalid arguments" << std::endl;
+      std::cout << "invalid arguments: program needs one argument" << std::endl;
       return -1;
   }
   std::cout << "Recommended number of threads: "
             << std::thread::hardware_concurrency() << std::endl
             << "number of threads: " << number_of_threads << std::endl;
+
   std::vector<std::thread> threads;
   for (unsigned i = 0; i < number_of_threads; ++i){
     threads.emplace_back(std::thread(calculation));
