@@ -16,6 +16,8 @@
 #include <boost/log/utility/setup/console.hpp>
 #include <boost/log/utility/setup/file.hpp>
 #include <boost/log/utility/setup/common_attributes.hpp>
+#include <boost/log/sources/logger.hpp>
+#include <boost/log/expressions.hpp>
 
 class hash_calculator {
  public:
