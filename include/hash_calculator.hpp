@@ -18,12 +18,15 @@
 #include <boost/log/utility/setup/common_attributes.hpp>
 #include <boost/log/sources/logger.hpp>
 #include <boost/log/expressions.hpp>
+#include <boost/log/utility/empty_deleter.hpp>
+#include <boost/log/expressions/keyword_fwd.hpp>
+#include <boost/log/expressions/keyword.hpp>
+#include <boost/log/support/date_time.hpp>
 
 class hash_calculator {
  public:
   void calculate_hash();
   static int* a;
- // static
 };
 
 #endif  // MULTITHREADS_HASH_CALCULATOR_HPP

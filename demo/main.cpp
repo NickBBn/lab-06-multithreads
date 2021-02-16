@@ -7,55 +7,48 @@
 
 namespace logging = boost::log;
 namespace sinks = boost::log::sinks;
-namespace keywords = boost::log::keywords;
 namespace expr = boost::log::expressions;
+namespace attrs = boost::log::attributes;
+
+BOOST_LOG_ATTRIBUTE_KEYWORD(line_id, "LineID", unsigned int)
+BOOST_LOG_ATTRIBUTE_KEYWORD(timestamp, "TimeStamp", boost::posix_time::ptime)
+BOOST_LOG_ATTRIBUTE_KEYWORD(severity, "Severity", boost::log::trivial::severity_level)
+BOOST_LOG_ATTRIBUTE_KEYWORD(thread_id, "ThreadID", boost::log::attributes::current_thread_id::value_type)
+
+
+int* hash_calculator::a = nullptr;
+void logging_init(){
+  typedef sinks::synchronous_sink< sinks::text_ostream_backend > text_sink;
+  boost::shared_ptr< text_sink > sink = boost::make_shared< text_sink >();
+  sink->locked_backend()->add_stream(
+      boost::make_shared< std::ofstream >("sample.log"));
+  boost::shared_ptr< std::ostream > stream(&std::clog, logging::empty_deleter());
+  sink->locked_backend()->add_stream(stream);
+  boost::log::formatter formatter = expr::stream
+      << std::setw(7) << std::setfill('0') << line_id << std::setfill(' ') << " | "
+      << "T." << thread_id << " | "
+      << expr::format_date_time(timestamp, "%Y-%m-%d, %H:%M:%S.%f") << " "
+      << "[" << boost::log::trivial::severity << "]"
+      << " - " << expr::smessage;
+  sink->set_formatter(formatter);
+  logging::core::get()->add_sink(sink);
+  logging::add_common_attributes();
+}
+
+void stop_logging(){
+  boost::shared_ptr< logging::core > core = logging::core::get();
+  core->flush();
+  core->remove_all_sinks();
+}
 
 void calculation() {
   hash_calculator calc;
   calc.calculate_hash();
 }
 
-int* hash_calculator::a = nullptr;
-void logging_init(){
-/*
-  boost::shared_ptr< logging::core > core = logging::core::get();
-  boost::shared_ptr< sinks::text_file_backend > backend =
-      boost::make_shared< sinks::text_file_backend >(
-          keywords::file_name = "file_%5N.log",
-          keywords::rotation_size = 5 * 1024 * 1024,
-          keywords::format = "[%TimeStamp%]: %Message%",
-          keywords::time_based_rotation =
-              sinks::file::rotation_at_time_point(12, 0, 0));
-  typedef sinks::synchronous_sink<sinks::text_file_backend> text_sink;
-  boost::shared_ptr<text_sink> sink(new text_sink(backend));
-  //sink->locked_backend()->add_stream(backend);
-  core->add_sink(sink);
-  logging::add_console_log();
-  core->add_global_attribute("TimeStamp", logging::attributes::local_clock());
- // logging::add_file_log("file");
-  //logging::add_common_attributes();
-  */
-  typedef sinks::synchronous_sink< sinks::text_ostream_backend > text_sink;
-  boost::shared_ptr< text_sink > sink = boost::make_shared< text_sink >();
-
-  sink->locked_backend()->add_stream(
-      boost::make_shared< std::ofstream >("sample.log"));
-
-  sink->set_formatter
-      (
-          expr::format("%1%: <%2%> %3%")
-          % expr::attr< unsigned int >("ThreadID")
-          % logging::trivial::severity
-          % expr::smessage
-      );
-
-  logging::core::get()->add_sink(sink);
-}
-
 int main(int argc, char* argv[]) {
   logging_init();
-  logging::sources::logger lg;
-  BOOST_LOG(lg) << "A trace severity message";
+  BOOST_LOG_TRIVIAL(info) << "A trace severity message";
   hash_calculator::a = new int(25);
   unsigned number_of_threads = 0;
   switch (argc){
@@ -86,5 +79,6 @@ int main(int argc, char* argv[]) {
   {
     thread.join();
   }
+  stop_logging();
   return 0;
 }
