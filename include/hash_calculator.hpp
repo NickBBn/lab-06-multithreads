@@ -7,7 +7,6 @@
 #include <thread>
 #include <iostream>
 #include "boost/log/trivial.hpp"
-//#include "boost/log/sources/logger.hpp"
 #include "boost/log/sinks.hpp"
 #include "boost/log/core/record.hpp"
 #include "boost/log/core.hpp"
@@ -22,10 +21,11 @@
 #include <boost/log/expressions/keyword_fwd.hpp>
 #include <boost/log/expressions/keyword.hpp>
 #include <boost/log/support/date_time.hpp>
+#include "../third-party/PicoSHA2/picosha2.h"
 
 class hash_calculator {
  public:
-  void calculate_hash();
+    [[noreturn]] void calculate_hash();
   static int* a;
 };
 

@@ -4,6 +4,7 @@
 #include <iostream>
 #include <thread>
 #include <vector>
+#include <csignal>
 
 namespace logging = boost::log;
 namespace sinks = boost::log::sinks;
@@ -15,8 +16,6 @@ BOOST_LOG_ATTRIBUTE_KEYWORD(timestamp, "TimeStamp", boost::posix_time::ptime)
 BOOST_LOG_ATTRIBUTE_KEYWORD(severity, "Severity", boost::log::trivial::severity_level)
 BOOST_LOG_ATTRIBUTE_KEYWORD(thread_id, "ThreadID", boost::log::attributes::current_thread_id::value_type)
 
-
-int* hash_calculator::a = nullptr;
 void logging_init(){
   typedef sinks::synchronous_sink< sinks::text_ostream_backend > text_sink;
   boost::shared_ptr< text_sink > sink = boost::make_shared< text_sink >();
@@ -35,21 +34,23 @@ void logging_init(){
   logging::add_common_attributes();
 }
 
-void stop_logging(){
+void safe_exit(int exit_param) {
   boost::shared_ptr< logging::core > core = logging::core::get();
   core->flush();
   core->remove_all_sinks();
+  exit(exit_param);
 }
 
-void calculation() {
+void calculation(){
+  BOOST_LOG_TRIVIAL(trace) << "Opened new Thread";
   hash_calculator calc;
   calc.calculate_hash();
 }
 
 int main(int argc, char* argv[]) {
+  std::signal(SIGINT, safe_exit);
+  std::srand(std::time(nullptr));
   logging_init();
-  BOOST_LOG_TRIVIAL(info) << "A trace severity message";
-  hash_calculator::a = new int(25);
   unsigned number_of_threads = 0;
   switch (argc){
     case 1 :
@@ -70,15 +71,9 @@ int main(int argc, char* argv[]) {
   std::cout << "Recommended number of threads: "
             << std::thread::hardware_concurrency() << std::endl
             << "number of threads: " << number_of_threads << std::endl;
-
   std::vector<std::thread> threads;
-  for (unsigned i = 0; i < number_of_threads; ++i){
+  for (unsigned i = 0; i < number_of_threads; ++i)
     threads.emplace_back(std::thread(calculation));
-  }
-  for (auto& thread : threads)
-  {
-    thread.join();
-  }
-  stop_logging();
+  for (auto& thread : threads) thread.join();
   return 0;
 }

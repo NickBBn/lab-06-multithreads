@@ -1,10 +1,16 @@
 #include "hash_calculator.hpp"
 
-namespace src = boost::log::sources;
+const size_t begin_pos = 60;
+const size_t length = 4;
+const std::string nulls = "0000";
 
-void hash_calculator::calculate_hash() {
-  //std::cout << "Thread id : " << std::this_thread::get_id() << std::endl;
-  ++(*a);
-  std::cout << "a = " << *a << std::endl;
-  BOOST_LOG_TRIVIAL(error) << "A trace from thread, " << *a;
+[[noreturn]] void hash_calculator::calculate_hash() {
+  while (true){
+    int data = std::rand();
+    std::string hash = picosha2::hash256_hex_string(std::to_string(data));
+    if (hash.substr(begin_pos, length) == nulls)
+      BOOST_LOG_TRIVIAL(info) << "Rand: " << data << std::endl << hash;
+    else
+      BOOST_LOG_TRIVIAL(trace) << "Rand: " << data << std::endl << hash;
+  }
 }
