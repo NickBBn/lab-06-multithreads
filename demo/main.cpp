@@ -27,7 +27,7 @@ void logging_init(){
       << std::setw(7) << std::setfill('0') << line_id << std::setfill(' ') << " | "
       << "T." << thread_id << " | "
       << expr::format_date_time(timestamp, "%Y-%m-%d, %H:%M:%S.%f") << " "
-      << "[" << boost::log::trivial::severity << "]"
+      << "[" << severity << "]"
       << " - " << expr::smessage;
   sink->set_formatter(formatter);
   logging::core::get()->add_sink(sink);
