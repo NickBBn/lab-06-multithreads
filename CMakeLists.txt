@@ -34,11 +34,13 @@ find_package(Boost CONFIG REQUIRED log filesystem system chrono thread regex dat
 
 add_library(${PROJECT_NAME} STATIC
   # enum your files and delete this comment
-        sources/hash_calculator.cpp include/hash_calculator.hpp third-party/PicoSHA2/picosha2.h)
+        sources/hash_calculator.cpp include/hash_calculator.hpp
+        third-party/PicoSHA2/picosha2.h include/empty_deleter.hpp)
 
 add_executable(calculation
   ${CMAKE_CURRENT_SOURCE_DIR}/demo/main.cpp
-        sources/hash_calculator.cpp include/hash_calculator.hpp third-party/PicoSHA2/picosha2.h)
+        sources/hash_calculator.cpp include/hash_calculator.hpp
+        third-party/PicoSHA2/picosha2.h include/empty_deleter.hpp)
 
 target_include_directories(${PROJECT_NAME} PUBLIC
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
