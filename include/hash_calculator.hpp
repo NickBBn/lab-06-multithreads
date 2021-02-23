@@ -22,11 +22,17 @@
 #include <boost/log/expressions/keyword.hpp>
 #include <boost/log/support/date_time.hpp>
 #include "../third-party/PicoSHA2/picosha2.h"
+#include <fstream>
+#include <atomic>
+#include <mutex>
 
 class hash_calculator {
  public:
-    [[noreturn]] void calculate_hash();
-  static int* a;
+    int calculate_hash();
+    void print_to_json(const std::string &data, const std::string &hash);
+  static std::ofstream* json_file;
+  static std::atomic<bool> close_threads;
+  static std::mutex json_mutex;
 };
 
 #endif  // MULTITHREADS_HASH_CALCULATOR_HPP

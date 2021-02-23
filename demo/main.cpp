@@ -1,4 +1,3 @@
-#include <fstream>
 #include <hash_calculator.hpp>
 #include <iomanip>
 #include <iostream>
@@ -34,12 +33,24 @@ void logging_init(){
   logging::add_common_attributes();
 }
 
-void safe_exit(int exit_param) {
+void stop_calculation([[maybe_unused]] int exit_param) {
+  hash_calculator::close_threads = true;
+}
+
+void safe_exit() {
   boost::shared_ptr< logging::core > core = logging::core::get();
   core->flush();
   core->remove_all_sinks();
-  exit(exit_param);
+  if (hash_calculator::json_file)
+    if (hash_calculator::json_file->is_open()){
+      hash_calculator::json_file->close();
+      delete hash_calculator::json_file;
+    }
 }
+
+std::ofstream* hash_calculator::json_file = nullptr;
+std::atomic<bool> hash_calculator::close_threads = false;
+std::mutex hash_calculator::json_mutex;
 
 void calculation(){
   BOOST_LOG_TRIVIAL(trace) << "Opened new Thread";
@@ -48,8 +59,9 @@ void calculation(){
 }
 
 int main(int argc, char* argv[]) {
-  std::signal(SIGINT, safe_exit);
+  std::signal(SIGINT, stop_calculation);
   std::srand(std::time(nullptr));
+  hash_calculator::json_file = new std::ofstream("json_file.json");
   logging_init();
   unsigned number_of_threads = 0;
   switch (argc){
@@ -75,5 +87,6 @@ int main(int argc, char* argv[]) {
   for (unsigned i = 0; i < number_of_threads; ++i)
     threads.emplace_back(std::thread(calculation));
   for (auto& thread : threads) thread.join();
+  safe_exit();
   return 0;
 }
