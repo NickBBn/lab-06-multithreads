@@ -41,14 +41,10 @@ void safe_exit() {
   boost::shared_ptr< logging::core > core = logging::core::get();
   core->flush();
   core->remove_all_sinks();
-  if (hash_calculator::json_file)
-    if (hash_calculator::json_file->is_open()){
-      hash_calculator::json_file->close();
-      delete hash_calculator::json_file;
-    }
+  delete hash_calculator::json_struct;
 }
 
-std::ofstream* hash_calculator::json_file = nullptr;
+hash_calculator::json_structure* hash_calculator::json_struct = nullptr;
 std::atomic<bool> hash_calculator::close_threads = false;
 std::mutex hash_calculator::json_mutex;
 
@@ -58,12 +54,8 @@ void calculation(){
   calc.calculate_hash();
 }
 
-int main(int argc, char* argv[]) {
-  std::signal(SIGINT, stop_calculation);
-  std::srand(std::time(nullptr));
-  hash_calculator::json_file = new std::ofstream("json_file.json");
-  logging_init();
-  unsigned number_of_threads = 0;
+void manage_params(const int& argc, char* argv[], unsigned &number_of_threads){
+  const std::string json_extension = ".json";
   switch (argc){
     case 1 :
       number_of_threads = std::thread::hardware_concurrency();
@@ -72,17 +64,37 @@ int main(int argc, char* argv[]) {
       try {
         number_of_threads = std::stoi(argv[1]);
       } catch (const std::invalid_argument& e) {
-        std::cout << "Invalid arguments: argument is not integer " << std::endl;
-        return -1;
+        hash_calculator::json_struct = new hash_calculator::json_structure(argv[1] + json_extension);
+        number_of_threads = std::thread::hardware_concurrency();
       }
       break;
+    case 3:
+      try {
+        number_of_threads = std::stoi(argv[1]);
+      } catch (const std::invalid_argument& e) {
+        throw std::invalid_argument("Invalid arguments: number of threads must be integer ");
+      }
+      hash_calculator::json_struct = new hash_calculator::json_structure(argv[2] + json_extension);
+      break;
     default:
-      std::cout << "invalid arguments: program needs one argument" << std::endl;
-      return -1;
+      throw std::invalid_argument("Invalid arguments: Program needs two or less parameters ");
   }
   std::cout << "Recommended number of threads: "
             << std::thread::hardware_concurrency() << std::endl
             << "number of threads: " << number_of_threads << std::endl;
+}
+
+int main(int argc, char* argv[]) {
+  std::signal(SIGINT, stop_calculation);
+  std::srand(std::time(nullptr));
+  logging_init();
+  unsigned number_of_threads = 0;
+  try {
+    manage_params(argc, argv, number_of_threads);
+  } catch (const std::invalid_argument &error) {
+    std::cout << error.what();
+    return -1;
+  }
   std::vector<std::thread> threads;
   for (unsigned i = 0; i < number_of_threads; ++i)
     threads.emplace_back(std::thread(calculation));

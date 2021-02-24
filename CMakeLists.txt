@@ -31,6 +31,8 @@ hunter_add_package(GTest)
 find_package(GTest CONFIG REQUIRED)
 hunter_add_package(Boost COMPONENTS log filesystem system chrono thread regex date_time atomic)
 find_package(Boost CONFIG REQUIRED log filesystem system chrono thread regex date_time atomic)
+hunter_add_package(nlohmann_json)
+find_package(nlohmann_json CONFIG REQUIRED)
 
 add_library(${PROJECT_NAME} STATIC
   # enum your files and delete this comment
@@ -56,6 +58,7 @@ target_link_libraries(multithreads PUBLIC Boost::log
         Boost::atomic
         Boost::system
         Boost::boost
+        nlohmann_json::nlohmann_json
         )
 
 target_link_libraries(calculation ${PROJECT_NAME})
