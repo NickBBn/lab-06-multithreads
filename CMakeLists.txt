@@ -37,12 +37,12 @@ find_package(nlohmann_json CONFIG REQUIRED)
 add_library(${PROJECT_NAME} STATIC
   # enum your files and delete this comment
         sources/hash_calculator.cpp include/hash_calculator.hpp
-        third-party/PicoSHA2/picosha2.h include/empty_deleter.hpp)
+        third-party/PicoSHA2/picosha2.h include/empty_deleter.hpp include/settings_of_logging.hpp)
 
 add_executable(calculation
   ${CMAKE_CURRENT_SOURCE_DIR}/demo/main.cpp
         sources/hash_calculator.cpp include/hash_calculator.hpp
-        third-party/PicoSHA2/picosha2.h include/empty_deleter.hpp)
+        third-party/PicoSHA2/picosha2.h include/empty_deleter.hpp include/settings_of_logging.hpp)
 
 target_include_directories(${PROJECT_NAME} PUBLIC
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
